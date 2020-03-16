@@ -1,7 +1,15 @@
+const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const isDev = process.env.NODE_ENV === 'development';
 const config = require('./public/config')[isDev ? 'dev' : 'build'];
 module.exports = {
+  entry: './src/index.js',
+  output: {
+    path: path.resolve(__dirname, 'dist'), //必须是绝对路径
+    filename: 'bundle.js',
+    publicPath: '/' //通常是CDN地址
+  },
   mode: isDev ? 'development' : 'production',
   devtool: 'cheap-module-eval-source-map', //开发环境下使用
   module: {
@@ -29,6 +37,21 @@ module.exports = {
           }
         }, 'less-loader'],
         exclude: /node_modules/
+      },
+      {
+        test: /\.(png|jpg|gif|jpeg|webp|svg|eot|ttf|woff|woff2)$/,
+        use: [
+          {
+            loader: 'url-loader',
+            options: {
+              limit: 10240, //10k
+              esModule: false,
+              name: '[name]_[hash:6].[ext]',
+              outputPath: 'assets'
+            }
+          }
+        ],
+        exclude: /node_modules/
       }
     ]
   },
@@ -38,7 +61,8 @@ module.exports = {
       template: './public/index.html',
       filename: 'index.html',
       config: config.template
-    })
+    }),
+    new CleanWebpackPlugin()
   ],
   devServer: {
     port: '3000', //默认是8000
